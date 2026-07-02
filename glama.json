@@ -1,0 +1,23 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["SmartCredit-io"],
+  "name": "web3-borrow-lend-mcp",
+  "description": "Real-time Aave V3 liquidation risk intelligence for Ethereum mainnet borrower positions. Uses a log-normal volatility model to compute liquidation probability, per-asset price thresholds, and tiered risk labels — queryable from any MCP-compatible AI client.",
+  "type": "mcp_server",
+  "framework": "Python / FastMCP",
+  "transport": ["http"],
+  "keywords": [
+    "mcp",
+    "aave",
+    "defi",
+    "liquidation",
+    "risk",
+    "ethereum",
+    "lending",
+    "borrow",
+    "web3",
+    "health-factor",
+    "mcp-server",
+    "awesome-mcp-servers"
+  ]
+}

@@ -1,0 +1,67 @@
+# SmartCredit Aave Liquidation Monitor MCP
+
+> Real-time Aave V3 liquidation risk intelligence for Ethereum mainnet borrower positions. Uses a log-normal volatility model to compute liquidation probability, per-asset price thresholds, and tiered risk labels. No authentication required — public endpoint.
+
+## Overview
+
+- **MCP Endpoint:** https://mcp.smartcredit.io/web3-borrow-lend-mcp
+- **Transport:** Streamable HTTP (MCP spec 2025-03-26)
+- **Auth:** None — public endpoint, no API key required
+- **GitHub:** https://github.com/SmartCredit-io/web3-borrow-lend-mcp
+- **Website:** https://smartcredit.io
+- **Network:** Ethereum mainnet (Aave V3 only)
+- **Data Sources:** Aave V3 contracts (live RPC), CoinGecko price feed, Chainlink fallback
+
+## MCP Tools (2)
+
+- `get_liquidation_risk` — Evaluates liquidation probability for an Aave V3 borrower position. Inputs: `user_address` (required), `platform` (default: AAVE), `hf_threshold` (default: 1.5), `loan_term` (default: 7 days), `sigma_window` (default: 30 days). Returns: health factor, collateral/debt balances, liquidation probability, risk tier, per-asset liquidation price thresholds.
+- `check_api_health` — Pings the server. No inputs. Returns "ok" or an error string.
+
+## Risk Tiers
+
+- Safe (0–5%) · Watch (5–15%) · Warning (15–35%) · Danger (35–70%) · Critical (70–100%) · Liquidatable (HF < 1.0)
+
+## Claude Code Subagents (6)
+
+Ready-to-use specialist subagents in `.claude/agents/`. Copy into any project after registering the MCP server.
+
+- `smartcredit-liquidation-monitor` — Core liquidation risk check. Returns tier, probability, health factor, and per-asset liquidation prices.
+- `smartcredit-health-advisor` — Actionable advice to improve health factor and reduce liquidation probability.
+- `smartcredit-threshold-finder` — Extracts per-asset liquidation price thresholds (current price → liquidation price → % drop).
+- `smartcredit-stress-tester` — Stress tests a position across 7/14/30/90-day horizons and compares risk across time.
+- `smartcredit-portfolio-scanner` — Batch-scans multiple positions and ranks them by liquidation probability.
+- `smartcredit-risk-reporter` — Generates a full written risk report suitable for sharing with a team.
+
+## Setup (Claude Code)
+
+```bash
+claude mcp add --transport http smartcredit-aave-liquidation-monitor \
+  https://mcp.smartcredit.io/web3-borrow-lend-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "smartcredit-aave-liquidation-monitor": {
+      "type": "http",
+      "url": "https://mcp.smartcredit.io/web3-borrow-lend-mcp"
+    }
+  }
+}
+```
+
+## Key Files
+
+- [AGENTS.md](./AGENTS.md) — Machine-readable index of all 6 subagents with triggers, tools, inputs, and outputs
+- [SKILL.md](./SKILL.md) — Full skill definition for Claude Code, Cursor, and OpenClaw ClawHub
+- [CLAUDE.md](./CLAUDE.md) — Project conventions, subagent table, risk tiers, and setup
+- [README.md](./README.md) — Full documentation, tool schemas, and integration guides
+- [references/tools-liquidation-risk.md](./references/tools-liquidation-risk.md) — `get_liquidation_risk` full schema and parameters
+- [references/tools-health.md](./references/tools-health.md) — `check_api_health` usage
+
+## Further Reading
+
+- https://smartcredit.io/blog/aave-liquidation-risk-guide/
+- https://smartcredit.io/blog/health-factor-explained/
+- https://smartcredit.io/blog/defi-lending-risk-management/
+- https://smartcredit.io/blog/mcp-integration-guide/

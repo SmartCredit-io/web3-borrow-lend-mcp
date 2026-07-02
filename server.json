@@ -1,0 +1,13 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.SmartCredit-io/web3-borrow-lend-mcp",
+  "title": "SmartCredit Aave Liquidation Monitor MCP",
+  "description": "Real-time Aave V3 liquidation risk intelligence for Ethereum mainnet. Computes liquidation probability using a log-normal volatility model, per-asset price thresholds, and tiered risk labels (Safe → Liquidatable).",
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "http",
+      "url": "https://mcp.smartcredit.io/web3-borrow-lend-mcp"
+    }
+  ]
+}

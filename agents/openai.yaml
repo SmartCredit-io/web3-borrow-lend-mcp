@@ -1,0 +1,117 @@
+interface:
+  display_name: "SmartCredit Aave Liquidation Monitor"
+  short_description: "Real-time Aave V3 liquidation risk intelligence for Ethereum mainnet — health factor, per-asset liquidation prices, and tiered risk labels. No API key required."
+  brand_color: "#1A56DB"
+  default_prompt: "Check the liquidation risk for this Aave V3 position on Ethereum"
+
+policy:
+  # Allow Codex to invoke this skill automatically when Aave positions, liquidation risk,
+  # health factor, or DeFi lending risk topics are detected.
+  allow_implicit_invocation: true
+
+capabilities:
+  - id: get_liquidation_risk
+    display_name: "Get Liquidation Risk"
+    description: >
+      Evaluates liquidation probability for an Aave V3 borrower position on Ethereum mainnet
+      using a log-normal volatility model. Returns health factor, collateral/debt balances,
+      liquidation probability, risk tier (Safe → Liquidatable), and per-asset liquidation
+      price thresholds.
+    networks: [ETH]
+    inputs:
+      - name: user_address
+        type: string
+        required: true
+        description: "Borrower wallet address (0x…)"
+      - name: platform
+        type: string
+        required: false
+        description: "Lending protocol — only AAVE supported (default: AAVE)"
+      - name: hf_threshold
+        type: number
+        required: false
+        description: "Only score positions with HF below this value (default: 1.5)"
+      - name: loan_term
+        type: integer
+        required: false
+        description: "Model look-ahead window in days, 1–365 (default: 7)"
+      - name: sigma_window
+        type: integer
+        required: false
+        description: "Days of price history for volatility estimation, 7–365 (default: 30)"
+
+  - id: check_api_health
+    display_name: "Check API Health"
+    description: >
+      Pings the SmartCredit MCP server to confirm it is reachable. No parameters required.
+      Returns "ok" on success or an error description on failure.
+    networks: []
+    inputs: []
+
+subagents:
+  - id: smartcredit-liquidation-monitor
+    display_name: "Liquidation Monitor"
+    description: "Core liquidation risk check. Returns tier, probability, health factor, and per-asset liquidation prices for a single Aave V3 position."
+    model: claude-haiku-4-5-20251001
+    tools: [get_liquidation_risk]
+    file: .claude/agents/smartcredit-liquidation-monitor.md
+
+  - id: smartcredit-health-advisor
+    display_name: "Health Advisor"
+    description: "Analyzes an Aave V3 position and provides ranked, actionable advice to improve health factor and reduce liquidation probability."
+    model: claude-sonnet-4-6
+    tools: [get_liquidation_risk]
+    file: .claude/agents/smartcredit-health-advisor.md
+
+  - id: smartcredit-threshold-finder
+    display_name: "Threshold Finder"
+    description: "Extracts per-asset liquidation price thresholds — current price, liquidation price, and % drop to trigger for each collateral asset."
+    model: claude-haiku-4-5-20251001
+    tools: [get_liquidation_risk]
+    file: .claude/agents/smartcredit-threshold-finder.md
+
+  - id: smartcredit-stress-tester
+    display_name: "Stress Tester"
+    description: "Stress tests a position across 7/14/30/90-day time horizons and produces a risk matrix showing how liquidation probability evolves."
+    model: claude-sonnet-4-6
+    tools: [get_liquidation_risk]
+    file: .claude/agents/smartcredit-stress-tester.md
+
+  - id: smartcredit-portfolio-scanner
+    display_name: "Portfolio Scanner"
+    description: "Batch-scans multiple Aave V3 borrower positions and ranks them by liquidation probability. Flags Danger and Critical positions."
+    model: claude-sonnet-4-6
+    tools: [get_liquidation_risk]
+    file: .claude/agents/smartcredit-portfolio-scanner.md
+
+  - id: smartcredit-risk-reporter
+    display_name: "Risk Reporter"
+    description: "Generates a full written risk report for an Aave V3 position — executive summary, collateral analysis, debt breakdown, and recommendations."
+    model: claude-sonnet-4-6
+    tools: [get_liquidation_risk]
+    file: .claude/agents/smartcredit-risk-reporter.md
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "smartcredit-aave-liquidation-monitor"
+      description: "SmartCredit Aave Liquidation Monitor MCP — real-time liquidation risk for Aave V3 positions on Ethereum mainnet via Streamable HTTP."
+      transport: "http"
+      url: "https://mcp.smartcredit.io/web3-borrow-lend-mcp"
+
+metadata:
+  author: "SmartCredit.io"
+  homepage: "https://smartcredit.io"
+  repository: "https://github.com/SmartCredit-io/web3-borrow-lend-mcp"
+  category: "DeFi / Lending / Risk Management"
+  tags:
+    - aave
+    - defi
+    - liquidation
+    - health-factor
+    - ethereum
+    - lending
+    - borrow
+    - risk
+    - mcp
+    - web3
